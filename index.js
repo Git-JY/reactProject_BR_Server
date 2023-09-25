@@ -55,4 +55,4 @@ app.get('/blog', async function(req, res){
     res.send( db.data );
 })
 
-app.listen(3030);
+app.listen(3000);
