@@ -7,8 +7,8 @@ const app = express(); //웬만하면 모듈(cors, fs, bodyParser)받고 쓰기(
 const axios = require('axios');
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false })); // form에서 action속성으로 넘어온 body(post의 그 body)내용을 얻기 위함(false는 원래 써줘야 함)
-app.use(bodyParser.json()); // body에 있는 json객체를 넘어오기 위함
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 const searchDb = axios.create({
     baseURL:'https://openapi.naver.com/v1/search', /* https://openapi.naver.com/v1/search */
@@ -55,4 +55,82 @@ app.get('/blog', async function(req, res){
     res.send( db.data );
 })
 
-app.listen(3000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//카카오로 구현한 로그인
+app.get('/kakaoLoginObjs', function (req, res) {
+    const jsonData = JSON.parse(fs.readFileSync('./db/kakaoLoginObj.json')); //fs.readFileSync => 동기함수(gpt가 그렇게 알려줌)
+    console.log('req.query', req.query);
+    const {id, nickname} = req.query; 
+    let firstLogin = true;
+
+    jsonData.map((obj) => {
+        if(obj.id == id){firstLogin = false}
+    });
+
+    if(!firstLogin){//로그인 한 적이 있는 경우
+        const obj = jsonData.filter(obj => obj.id == id)[0];
+        console.log("ddd1",obj);
+        res.send( obj );
+
+    }else{//처음 로그인 하는 경우
+        let obj = {
+            "id": id,
+            "nickname": nickname.slice(0, 8),
+            "bookList": []
+        }
+        console.log("ddd2",obj);
+        let data = [...jsonData, obj];
+        fs.writeFileSync('./db/kakaoLoginObj.json', JSON.stringify(data)   );
+
+        res.send( obj );
+    }
+})
+
+
+
+
+
+//로그인 객체 저장
+app.post('/kakaoLoginObjs',  function (req, res) {
+    console.log("바디",req.body);
+    const jsonData = JSON.parse( fs.readFileSync('./db/kakaoLoginObj.json') );
+    console.log("jsonData",jsonData);
+    let firstLogin = true;
+
+    jsonData.map((obj)=>{
+        if(obj.id == req.body.id) {firstLogin = false};
+    })
+    
+    if(!firstLogin){//로그인 한 적이 있는 경우
+        let data = jsonData.map((obj)=>{
+            if(obj.id == req.body.id){
+                obj.nickname = req.body.nickname;
+                obj.bookList = req.body.bookList;
+            }
+            return obj;
+        })
+        fs.writeFileSync('./db/kakaoLoginObj.json', JSON.stringify(data)   );
+        
+    }else{//처음 로그인 하는 경우
+        let data = [...jsonData, req.body]
+        fs.writeFileSync('./db/kakaoLoginObj.json', JSON.stringify(data)   );
+    }
+    
+    res.send('성공');
+})
+
+
+app.listen(3000); //3000
