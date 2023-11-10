@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors'); //npm i cors //cors 에러 막기위해 설치
 const fs = require('fs'); //이미 express에 있던 거라 다운 안해도 됨
 const bodyParser = require('body-parser');
+
+const { MongoClient } = require('mongodb'); //portfolio1 내용
 const app = express(); //웬만하면 모듈(cors, fs, bodyParser)받고 쓰기(모듈 받기 전에 쓴다고 오류생기는 건 또 아님)
 
 const axios = require('axios');
@@ -131,6 +133,31 @@ app.post('/kakaoLoginObjs',  function (req, res) {
     
     res.send('성공');
 })
+// app.listen(3000); //3000
+//========== ========== ========== ========== ========== ↓ (포트폴리오(우주컨셉-react) cloudtype이 용량 한계라서 함께 씀)
 
+// app.use(express.static('build')); 
 
-app.listen(3000); //3000
+const mongoDB_url = "mongodb+srv://tlatlago824:ljJlxOITgoeMzeX3@cluster0.qkekbll.mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(mongoDB_url);
+
+let collection;
+
+const dbConnect = async () => {
+    await client.connect();
+    const db = client.db('employmentDB');
+    collection = db.collection('contactMsg');
+
+    console.log('접속성공!');
+}//dbConnect() 함수정의
+
+app.post('/portfolio1', async function (req, res) {
+    console.log(req.body)
+    const {title, msg, date} = req.body;
+
+    await collection.insertOne({'key': Number(new Date()), title, msg, 'time': date}); // 값 넣기 
+
+    res.send('성공!');
+});
+
+app.listen(3000, dbConnect); 
