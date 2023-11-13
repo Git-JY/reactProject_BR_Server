@@ -151,12 +151,12 @@ const dbConnect = async () => {
     console.log('접속성공!');
 }//dbConnect() 함수정의
 
-app.get('/portfolio1', async function (req, res) {
+app.get('/portfolio_one', async function (req, res) {
 
     res.send('get성공했어요~!!!');
 });
 
-app.post('/portfolio1', async function (req, res) {
+app.post('/portfolio_one', async function (req, res) {
     console.log(req.body)
     const {title, msg, date} = req.body;
 
